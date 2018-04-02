@@ -13,16 +13,18 @@ int ballY;
 // 4 = start of the game, ball hasn't hit any wall yet
 uint8_t wall = 4;
 int dir;
-uint8_t initialize = 0;
+// The movement speed of the ball, moving 2 pixels during one frame.
 uint8_t ballSpeed = 2;
 int upDown;
 int8_t player1y = 30;
 int8_t player2y = 30;
+// The length of the players bar is 14 pixels, decrease for increased difficulty.
 uint8_t barSize = 14;
 uint8_t player1buttonL = 0;
 uint8_t player1buttonR = 0;
 uint8_t player2buttonL = 0;
 uint8_t player2buttonR = 0;
+// The speed of the players bars, 1 pixel per frame.
 uint8_t barSpeed = 1;
 
 void setup() {
