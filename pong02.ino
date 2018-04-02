@@ -20,17 +20,19 @@ uint8_t player2buttonR = 0;
 uint8_t barSpeed = 1;
 
 void setup() {
+  // Starting display and setting contrast to lowest setting.
   display.begin();
   display.setContrast(0);
+  // Getting random seed from A2 analog pin which is used for the random() below.
   randomSeed(analogRead(2));
   ballX = random(40, 88);
   ballY = random(3, 59);
-  // 0 = to the right, 1 = to the left
   randomSeed(analogRead(2));
-  dir = random(2);
-  // 0 = moving up, 1 = moving down
+  // The horizontal direction in which the ball moves: 0 = to the right, 1 = to the left
+  leftRight = random(2);
   delay(50);
   randomSeed(analogRead(3));
+  // The vertical direction in which the ball moves: 0 = moving up, 1 = moving down
   upDown = random(2);
   pinMode(2, INPUT);
   pinMode(3, INPUT);
@@ -42,13 +44,14 @@ void setup() {
 }
 
 void loop() {
+  // Drawing the game on screen.
     display.clearBuffer();
     display.drawBox(ballX, ballY, 2, 2);
     display.drawBox(0, player1y, 2, barSize);
     display.drawBox(126, player2y, 2, barSize);
     display.sendBuffer();
 
-// Buttons player 1 (digital pin 2 and 3)
+// Buttons for player 1 (digital pin 2 and 3)
     if (player1y < 0) {
       player1y = 0;
     }
@@ -70,7 +73,7 @@ void loop() {
       }
     }
 
-// Buttons player 2 (digital pin 4 and 5)
+// Buttons for player 2 (digital pin 4 and 5)
     if (player2y < 0) {
       player2y = 0;
     }
@@ -92,104 +95,119 @@ void loop() {
       }
     }
 
-// Start
-    if (wall == 4 && dir == 0 && upDown == 0) {
+// Game start, initial movement physics of ball
+    if (wall == 4 && leftRight == 0 && upDown == 0) {
       ballX += ballSpeed;
       ballY -= ballSpeed;
     }
 
-    if (wall == 4 && dir == 0 && upDown == 1) {
+    if (wall == 4 && leftRight == 0 && upDown == 1) {
       ballX += ballSpeed;
       ballY += ballSpeed;
     }
 
-    if (wall == 4 && dir == 1 && upDown == 0) {
+    if (wall == 4 && leftRight == 1 && upDown == 0) {
       ballX -= ballSpeed;
       ballY -= ballSpeed;
     }
 
-    if (wall == 4 && dir == 1 && upDown == 1) {
+    if (wall == 4 && leftRight == 1 && upDown == 1) {
       ballX -= ballSpeed;
       ballY += ballSpeed;
     }
 
-// Ball physics
-    // Hitting left wall
+// Ball physics after hitting one of the borders.
+    // Hitting left wall while coming from the botton moving upwards.
     if (wall == 0 && upDown == 0) {
-    dir = 0;
+    leftRight = 0;
     ballX += ballSpeed;
     ballY -= ballSpeed;
     }
-
+  
+    // Hitting the left wall while coming from the top moving downwards.
     if (wall == 0 && upDown == 1) {
-    dir = 0;
+    leftRight = 0;
     ballX += ballSpeed;
     ballY += ballSpeed;
     }
 
-    // Hitting right wall
+    // Hitting right wall, coming from the bottom and moving upward.
     if (wall == 2 && upDown == 0) {
-      dir = 1;
+      leftRight = 1;
       ballX -= ballSpeed;
       ballY -= ballSpeed;
     }
 
+    // Hitting right wall, coming from the top moving downward.
     if (wall == 2 && upDown == 1) {
-      dir = 1;
+      leftRight = 1;
       ballX -= ballSpeed;
       ballY += ballSpeed;
     }
 
-    // Hitting bottom wall
-    if (wall == 1 && dir == 0) {
+    // Hitting bottom wall while coming from the right moving leftward.
+    if (wall == 1 && leftRight == 0) {
       upDown = 0;
       ballX += ballSpeed;
       ballY -= ballSpeed;
     }
 
-    if (wall == 1 && dir == 1) {
+    // Hitting bottom wall, coming from the left moving rightward.
+    if (wall == 1 && leftRight == 1) {
       upDown = 0;
       ballX -= ballSpeed;
       ballY -= ballSpeed;
     }
 
-    // Hitting top wall
-    if (wall == 3 && dir == 0) {
+    // Hitting top wall, coming from the right moving leftward.
+    if (wall == 3 && leftRight == 0) {
       upDown = 1;
       ballX += ballSpeed;
       ballY += ballSpeed;
     }
 
-    if (wall == 3 && dir == 1) {
+    // Hitting top wall, coming from the left moving rightward.
+    if (wall == 3 && leftRight == 1) {
       upDown = 1;
       ballX -= ballSpeed;
       ballY += ballSpeed;
     }
-
+  
+    // If ball hits the bottom - aka 63rd Y-pixel of the screen, it sets the
+    // wall-1 flag, which changes ball movement
     if (ballY > 63) {
       wall = 1;
     }
 
+    // If ball hits the top - 0th Y-pixel of the screen, it sets the wall-3 flag,
+    // indicating that it came from top screen.
     if (ballY < 0) {
       wall = 3;
     }
 
     // Ball hits player 2 wall to the right
     if (ballX > 126) {
+      // If-statement to narrow down the hitbox to check if the ball
+      // hit the bar of the player.
       if (ballY >= player2y && ballY <= (player2y + barSize)) {
+        // On success - hitting the bar, it sets the wall-2 flag,
+        // indicating that it hit from the right wall
         wall = 2;
+        // On failure to hit the bar:
       } else {
         // Player 1 loses, player 2 wins
         display.clearBuffer();
         display.setFont(u8g2_font_profont17_tf);
         display.setFontDirection(1);
         display.drawStr(12, 22, "Win");
-        display.setFontDirection(3);
+        display.setFontdection(3);
         display.drawStr(116, 50, "Lose");
         display.sendBuffer();
 
+        // Creates a new randomly generated game.
         createNewGame();
 
+        // Waits 3 seconds until the game starts.
         delay(3000);
       }
     }
@@ -215,6 +233,7 @@ void loop() {
     }
 }
 
+// Creates new game, randomizing the ball spawn point and flight direction.
 void createNewGame(void) {
   randomSeed(analogRead(2));
   ballX = random(40, 88);
