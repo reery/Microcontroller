@@ -3,8 +3,14 @@
 
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C display(U8G2_R0,/* reset=*/ U8X8_PIN_NONE);
 
+// The X and Y position of the ball.
 int ballX;
 int ballY;
+// wall: 0 = ball has hit the left wall
+// 1 = ball has hit the bottom wall
+// 2 = ball has hit the right wall
+// 3 = ball has hit the top wall
+// 4 = start of the game, ball hasn't hit any wall yet
 uint8_t wall = 4;
 int dir;
 uint8_t initialize = 0;
@@ -52,22 +58,28 @@ void loop() {
     display.sendBuffer();
 
 // Buttons for player 1 (digital pin 2 and 3)
+    // The player cannot move his bar above the top corner of the screen.
     if (player1y < 0) {
       player1y = 0;
     }
-
+    
+    // The player cannot move the bar below the bottom of the screen.
+    // Here subtracting the size of the bar.
     if (player1y > (64 - barSize)) {
       player1y = 64 - barSize;
     }
 
+    // If the bar is in its limited range, pressed buttons will be recognized.
     if (player1y >= 0 && player1y <= (64 - barSize)) {
       player1buttonL = digitalRead(2);
       player1buttonR = digitalRead(3);
 
+      // Moving the bar towards the top when left button of player 1 is pressed.
       if (player1buttonL == HIGH && player1buttonR == LOW) {
         player1y -= barSpeed;
       }
 
+      // Moving the bar towards the bottom if right buttom of player 1 is pressed.
       if (player1buttonR == HIGH && player1buttonL == LOW) {
         player1y += barSpeed;
       }
