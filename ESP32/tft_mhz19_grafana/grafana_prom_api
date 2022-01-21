@@ -1,0 +1,6 @@
+remote_write:
+  - url: https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push
+    basic_auth:
+      username: 308206
+      password: eyJrIjoiZDkyYjcxZmZiZDkzYmNmZWJmZjI3OTBkM2ZjNjhlYmRkMWNiZmM3NyIsIm4iOiJncmFmYW5hX3Byb20iLCJpZCI6NTkxMzU4fQ==
+      
